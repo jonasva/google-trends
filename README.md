@@ -86,3 +86,5 @@ Each request has a random delay between 0.1 and 2 seconds. This setting can chan
     $session->setMaxSleepInterval(0); // disable the delay
     $session->setMaxSleepInterval(300); // set the max delay to 3 seconds
 ```
+
+Some other options are available as well, check the code for more information. 
