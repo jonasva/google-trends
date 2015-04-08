@@ -1,0 +1,22 @@
+{
+    "name": "jonasva/google-trends",
+    "description": "Unofficial Google Trends PHP API",
+    "homepage": "http://github.com/jonasva/google-trends",
+    "keywords": ["google", "trends", "api"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Jonas Van Assche",
+            "email": "jonas.vanvanassche@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.4.0",
+        "guzzlehttp/guzzle": "5.0.*@dev"
+    },
+    "autoload": {
+        "psr-0": {
+            "Jonasva\\GoogleTrends": "src/"
+        }
+    }
+}
