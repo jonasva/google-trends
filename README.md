@@ -23,7 +23,7 @@ First init a session object with your google account credentials. You'll need to
     $config = [
         'email'         =>  'my.google.account@gmail.com',
         'password'      =>  'mygooglepassword',
-        'recovery-email'  =>  'other.email.addres@example.com',
+        'recovery-email'  =>  'other.email.address@example.com',
     ];
 
     $session = (new GoogleSession($config))->authenticate();
