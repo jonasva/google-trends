@@ -4,7 +4,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Cookie\CookieJar;
 use GuzzleHttp\Cookie\SetCookie;
 
-class GoogleSession 
+class GoogleSession
 {
     /**
      * Google authentication url
@@ -22,9 +22,10 @@ class GoogleSession
     private static $defaults = [
         'email'         =>  '',
         'password'        =>  '',
+        'recovery-email'    =>  '',
         'user-agent'    =>  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.89 Safari/537.36',
         'language'      =>  'en_US',
-        'max-sleep-interval'    =>  200,
+        'max-sleep-interval'    =>  150,
     ];
 
     /**
@@ -40,6 +41,13 @@ class GoogleSession
      * @var string
      */
     private $password;
+
+    /**
+     * Google recovery email address
+     *
+     * @var string
+     */
+    private $recoveryEmail;
 
     /**
      * User agent to access trends
@@ -160,6 +168,7 @@ class GoogleSession
 
         $this->email = $configs['email'];
         $this->password = $configs['password'];
+        $this->recoveryEmail = $configs['recovery-email'];
         $this->userAgent = $configs['user-agent'];
         $this->language = $configs['language'];
         $this->guzzleClient = new Client([
@@ -206,6 +215,7 @@ class GoogleSession
 
         $params['Email'] = $this->email;
         $params['Passwd'] = $this->password;
+
         $params['pstMsg'] = '1';
         $params['continue'] = 'http://www.google.com/trends';
 
@@ -219,6 +229,37 @@ class GoogleSession
         }
 
         $response = $this->guzzleClient->send($request);
+
+        // verify sign in if needed
+        if (strpos($response->getEffectiveUrl(), 'LoginVerification') !== false) {
+            $content = $response->getBody()->getContents();
+
+            $document = new \DOMDocument();
+            @$document->loadHTML($content);
+
+            $inputElements = $document->getElementsByTagName("input");
+
+            $params = [];
+
+            foreach ($inputElements as $input) {
+                $params[$input->getAttribute("name")] = $input->getAttribute("value");
+            }
+
+            $params['challengetype'] = 'RecoveryEmailChallenge';
+            $params['emailAnswer'] = $this->recoveryEmail;
+
+            $url = substr($response->getEffectiveUrl(), 0, strpos($response->getEffectiveUrl(), '?'));
+
+            $request = $this->guzzleClient->createRequest('POST', $url, ['cookies' => $this->cookieJar]);
+            $query = $request->getQuery();
+
+
+            foreach ($params as $key => $param) {
+                $query->set($key, $param);
+            }
+
+            $response = $this->guzzleClient->send($request);
+        }
 
         // update cookies
         $response = $this->guzzleClient->get('https://www.google.com/accounts/CheckCookie?chtml=LoginDoneHtml',
@@ -241,5 +282,21 @@ class GoogleSession
         $this->cookieJar->setCookie($I4SUserLocale);
 
         return $this;
+    }
+
+    /*
+     * Check if logged into Google account
+     */
+    public function checkAuth()
+    {
+        $response = $this->guzzleClient->get('https://accounts.google.com',
+            ['cookies' => $this->cookieJar]
+        );
+
+        if (strpos($response->getEffectiveUrl(), 'ServiceLogin') !== false) {
+            return false;
+        }
+
+        return true;
     }
 } 

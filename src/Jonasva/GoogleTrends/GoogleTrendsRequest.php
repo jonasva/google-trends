@@ -108,7 +108,6 @@ class GoogleTrendsRequest
 
     /**
      * @param string $term
-     *
      * @return $this
      */
     public function addTerm($term)
@@ -122,13 +121,12 @@ class GoogleTrendsRequest
     /**
      * @param DateTime $startDate
      * @param DateTime $endDate
-     *
      * @return $this
      */
     public function setDateRange(\DateTime $startDate, \DateTime $endDate)
     {
         if ($startDate->format('Ym') === $endDate->format('Ym')) {
-            $this->dateRange = $startDate->format('m/Y');
+            $this->dateRange = $startDate->format('m/Y') . ' ' . '1m';
         }
         else {
 
@@ -146,7 +144,6 @@ class GoogleTrendsRequest
      * Normally it should be something like 0-3
      *
      * @param string $category
-     *
      * @return $this
      */
     public function setCategory($category)
@@ -157,7 +154,6 @@ class GoogleTrendsRequest
 
     /**
      * @param string $location
-     *
      * @return $this
      */
     public function setLocation($location)
@@ -168,7 +164,6 @@ class GoogleTrendsRequest
 
     /**
      * @param string $cid
-     *
      * @return $this
      */
     public function setCid($cid)
@@ -261,6 +256,6 @@ class GoogleTrendsRequest
             throw new BadResponseException($errorMsg, $request, $response);
         }
 
-        return new GoogleTrendsResponse($this, $response, $content);
+        return new GoogleTrendsResponse($response, $content);
     }
 } 

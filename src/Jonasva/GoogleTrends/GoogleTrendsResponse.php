@@ -1,19 +1,11 @@
 <?php namespace Jonasva\GoogleTrends;
 
-use Jonasva\GoogleTrends\GoogleTrendsRequest;
 use Jonasva\GoogleTrends\GoogleTrendsTerm;
 
 use GuzzleHttp\Message\Response;
 
 class GoogleTrendsResponse
 {
-    /**
-     * Google trends request
-     *
-     * @var GoogleTrendsRequest
-     */
-    private $request;
-
     /**
      * response body content
      *
@@ -27,16 +19,6 @@ class GoogleTrendsResponse
      * @var \GuzzleHttp\Message\Response
      */
     private $response;
-
-    /**
-     * Get request
-     *
-     * @return GoogleTrendsRequest $request
-     */
-    public function getRequest()
-    {
-        return $this->request;
-    }
 
     /**
      * Get response body content
@@ -61,13 +43,11 @@ class GoogleTrendsResponse
     /**
      * Create a new GoogleTrendsResponse instance
      *
-     * @param GoogleTrendsRequest $request
      * @param Response $response
      * @param string $responseContent
      */
-    public function __construct(GoogleTrendsRequest $request, Response $response, $responseContent)
+    public function __construct(Response $response, $responseContent)
     {
-        $this->request = $request;
         $this->response = $response;
         $this->responseContent = $responseContent;
     }
@@ -92,8 +72,26 @@ class GoogleTrendsResponse
             $content
         );
 
+        // replace empties
+        $content = preg_replace_callback(
+            '/\,([\,]+)?\,/',
+            function ($matches) {
+                ltrim ($matches[0], ',');
+                $matches[0] = str_replace(',', ',{"v":null}', $matches[0]) . ',';
+
+                return $matches[0];
+            },
+            $content
+        );
+
         // decode json
-        return @json_decode($content, true);
+        $decoded = @json_decode($content, true);
+
+        if (is_null($decoded)) {
+            throw new \Exception('Unable to decode response json');
+        }
+
+        return $decoded;
     }
 
     /*

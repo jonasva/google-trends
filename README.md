@@ -18,11 +18,12 @@ Run `composer update jonasva/google-trends` to install it.
 
 The API works with a session object, which requires you to authenticate with a valid Google account. This is necessary as unauthenticated users will hit the trends quota limit after just a couple of requests, resulting in a 1-day ban.
 
-First init a session object with your google account credentials
+First init a session object with your google account credentials. You'll need to have a recovery email setup in your Google account (https://support.google.com/accounts/answer/183726?hl=en), in case you are asked to verify yourself. Pass that recovery email to the session object like below:
 ```php
     $config = [
-        'email'     =>  'my.google.account@gmail.com',
-        'password'  =>  'mygooglepassword',
+        'email'         =>  'my.google.account@gmail.com',
+        'password'      =>  'mygooglepassword',
+        'recovery-email'  =>  'other.email.addres@example.com',
     ];
 
     $session = (new GoogleSession($config))->authenticate();
@@ -81,10 +82,15 @@ To just json decode response content, you can use this method:
     $response->jsonDecode();
 ```
 
-Each request has a random delay between 0.1 and 2 seconds. This setting can changed in the `GoogleSession` object.
+Each request has a random delay between 0.1 and 1.5 seconds. This setting can changed in the `GoogleSession` object.
 ```php
     $session->setMaxSleepInterval(0); // disable the delay
     $session->setMaxSleepInterval(300); // set the max delay to 3 seconds
+```
+
+To check if you are authenticated, you can use the `checkAuth()` method on a `GoogleSession` instance.
+```php
+    $response->checkAuth(); // return bool
 ```
 
 Some other options are available as well, check the code for more information. 
